@@ -23,6 +23,9 @@ func startRepl(config Config) {
 	for {
 		fmt.Print("Pokedex > ")
 		if scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Printf("Problem with input %s\n", err)
+			}
 			cmds := cleanInput(scanner.Text())
 			if len(cmds) == 0 {
 				fmt.Println("Please type command")
@@ -39,13 +42,10 @@ func startRepl(config Config) {
 			}
 			fmt.Println("Unknown command")
 		}
-
-		if err := scanner.Err(); err != nil {
-			fmt.Printf("Problem with input %s\n", err)
-		}
 	}
 }
 
+// TODO add command arguments validator
 type cliCommand struct {
 	name        string
 	description string
@@ -64,13 +64,13 @@ func getCommands() map[string]cliCommand {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
-		"map": {
-			name:        "map",
+		"mapf": {
+			name:        "mapf",
 			description: "Displays next pokemon areas",
 			callback:    commandMapf,
 		},
 		"mapb": {
-			name:        "map",
+			name:        "mapb",
 			description: "Displays previous pokemon areas",
 			callback:    commandMapb,
 		},
