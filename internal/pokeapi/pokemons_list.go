@@ -5,13 +5,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 func (c *Client) GetPokemonList(areaName string) (ExploredLocation, error) {
 	exploredLocation := ExploredLocation{}
-	url := baseURL + "/location-area/" + areaName
+	endpoint, err := url.JoinPath(baseURL, "/location-area/", areaName)
 
-	value, exists := c.cache.Get(url)
+	if err != nil {
+		return ExploredLocation{}, fmt.Errorf("error creating endpoint url: %v", err)
+	}
+
+	value, exists := c.cache.Get(endpoint)
 	if exists {
 		err := json.Unmarshal(value, &exploredLocation)
 		if err != nil {
@@ -20,32 +25,33 @@ func (c *Client) GetPokemonList(areaName string) (ExploredLocation, error) {
 		return exploredLocation, nil
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", endpoint, nil)
 
 	if err != nil {
-		return ExploredLocation{}, fmt.Errorf("error creating request %v", err)
+		return ExploredLocation{}, fmt.Errorf("error creating request: %v", err)
 
 	}
 
 	res, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return ExploredLocation{}, fmt.Errorf("error making request %v", err)
+		return ExploredLocation{}, fmt.Errorf("error making request: %v", err)
 	}
 
+	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		return ExploredLocation{}, fmt.Errorf("error reading request body %v", err)
+		return ExploredLocation{}, fmt.Errorf("error reading request body: %v", err)
 
 	}
 	err = json.Unmarshal(data, &exploredLocation)
 
 	if err != nil {
-		return ExploredLocation{}, fmt.Errorf("error unmarshalling data %v", err)
+		return ExploredLocation{}, fmt.Errorf("error unmarshalling data: %v", err)
 	}
 
-	go c.cache.Add(url, data)
+	go c.cache.Add(endpoint, data)
 
 	return exploredLocation, nil
 }
