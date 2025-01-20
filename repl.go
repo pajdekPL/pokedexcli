@@ -7,14 +7,12 @@ import (
 	"strings"
 
 	"github.com/pajdekpl/pokedexcli/internal/pokeapi"
-	"github.com/pajdekpl/pokedexcli/internal/pokecache"
 )
 
 type Config struct {
 	apiClient        pokeapi.Client
 	prevLocationsURL *string
 	nextLocationsURL *string
-	cache            *pokecache.Cache
 }
 
 func startRepl(config Config) {
@@ -34,7 +32,7 @@ func startRepl(config Config) {
 			cmdRaw := cmds[0]
 			cmd, existsCmd := getCommands()[cmdRaw]
 			if existsCmd {
-				err := cmd.callback(&config)
+				err := cmd.callback(&config, cmds[1:]...)
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -49,7 +47,7 @@ func startRepl(config Config) {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*Config, ...string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -73,6 +71,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Displays previous pokemon areas",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explore an area, usage 'explore <area_name>'",
+			callback:    commandExplore,
 		},
 	}
 }

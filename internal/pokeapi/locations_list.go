@@ -5,18 +5,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/pajdekpl/pokedexcli/internal/pokecache"
 )
 
-func (c *Client) GetLocationsList(pageUrl *string, cache pokecache.Cache) (Areas, error) {
+func (c *Client) GetLocationsList(pageUrl *string) (Areas, error) {
 	areas := Areas{}
 	url := baseURL + "/location-area"
 	if pageUrl != nil {
 		url = *pageUrl
 	}
 
-	value, exists := cache.Get(url)
+	value, exists := c.cache.Get(url)
 	if exists {
 		err := json.Unmarshal(value, &areas)
 		if err != nil {
@@ -41,7 +39,7 @@ func (c *Client) GetLocationsList(pageUrl *string, cache pokecache.Cache) (Areas
 	if err != nil {
 		return Areas{}, fmt.Errorf("error reading data from res.Body: %v", err)
 	}
-	go cache.Add(url, data)
+	go c.cache.Add(url, data)
 	err = json.Unmarshal(data, &areas)
 
 	if err != nil {
