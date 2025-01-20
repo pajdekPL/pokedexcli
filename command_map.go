@@ -4,20 +4,8 @@ import (
 	"fmt"
 )
 
-type Area struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-}
-
-type Areas struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-	Results  []Area `json:"results"`
-}
-
-func commandMapf(config *Config) error {
-	areas, err := config.apiClient.GetLocationsList(config.nextLocationsURL, *config.cache)
+func commandMapf(config *Config, args ...string) error {
+	areas, err := config.apiClient.GetLocationsList(config.nextLocationsURL)
 
 	if err != nil {
 		return err
@@ -33,13 +21,13 @@ func commandMapf(config *Config) error {
 	return nil
 }
 
-func commandMapb(config *Config) error {
+func commandMapb(config *Config, args ...string) error {
 
 	if config.prevLocationsURL == nil {
 		fmt.Println("you're on the first page")
 		return nil
 	}
-	areas, err := config.apiClient.GetLocationsList(config.prevLocationsURL, *config.cache)
+	areas, err := config.apiClient.GetLocationsList(config.prevLocationsURL)
 
 	if err != nil {
 		return err
